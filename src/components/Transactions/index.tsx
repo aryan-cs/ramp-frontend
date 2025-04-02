@@ -5,16 +5,20 @@ import { TransactionPane } from "./TransactionPane"
 import { SetTransactionApprovalFunction, TransactionsComponent } from "./types"
 
 export const Transactions: TransactionsComponent = ({ transactions }) => {
-  const { fetchWithoutCache, loading } = useCustomFetch()
+  const { fetchWithCache, clearCacheByEndpoint, loading } = useCustomFetch()
 
   const setTransactionApproval = useCallback<SetTransactionApprovalFunction>(
     async ({ transactionId, newValue }) => {
-      await fetchWithoutCache<void, SetTransactionApprovalParams>("setTransactionApproval", {
+      await fetchWithCache<void, SetTransactionApprovalParams>("setTransactionApproval", {
         transactionId,
         value: newValue,
       })
+      
+      // bug 6: editing employee data not showing changes in all employees tab
+      // fix 6: use cache to ensure changes persist
+      clearCacheByEndpoint(["transactionsByEmployee", "paginatedTransactions"])
     },
-    [fetchWithoutCache]
+    [fetchWithCache, clearCacheByEndpoint]
   )
 
   if (transactions === null) {
